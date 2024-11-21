@@ -41,6 +41,8 @@ document
 function clearDisplayedRestaurant() {
   document.getElementById("restaurantName").textContent = ""; // 清空餐廳名稱
   document.getElementById("restaurantCategory").textContent = ""; // 清空餐廳分類
+  // 確保結果區塊不會出現未選擇的餐廳
+  document.getElementById("result").classList.add("d-none");
 }
 
 // 清空餐廳清單
@@ -51,6 +53,9 @@ function clearRestaurantList() {
 
 function showActionSection() {
   document.getElementById("actionSection").classList.remove("d-none");
+  document.getElementById("listRestaurants").classList.remove("d-none");
+  // 確保隨機選擇餐點後會顯示結果區塊
+  document.getElementById("result").classList.remove("d-none");
 }
 
 // 隨機選擇餐點
@@ -79,6 +84,9 @@ document.getElementById("randomButton").addEventListener("click", () => {
         document.getElementById(
           "restaurantCategory"
         ).textContent = `分類：${restaurant.category}`;
+
+        // 顯示結果區塊
+        document.getElementById("result").classList.remove("d-none");
       } else {
         alert(`沒有符合的 ${selectedCategory} 店家資料！`);
       }
@@ -94,24 +102,43 @@ function listRestaurants(category) {
     const restaurants = snapshot.val();
 
     const listContainer = document.getElementById("restaurantsList");
-    listContainer.innerHTML = ""; // 清空現有清單
+    listContainer.innerHTML = ""; // 清空现有清单
 
     if (restaurants) {
-      // 過濾資料：將 category 包含在陣列中的餐廳過濾出來
+      // 过滤餐厅：只显示符合选定分类的餐厅
       const filteredRestaurants = Object.values(restaurants).filter(
         (restaurant) => restaurant.category.includes(category)
       );
 
       if (filteredRestaurants.length > 0) {
         filteredRestaurants.forEach((restaurant) => {
-          const link = document.createElement("a");
-          link.href = restaurant.googleMap;
-          link.target = "_blank";
-          link.classList.add("btn", "btn-link");
-          link.textContent = restaurant.name;
-          const listItem = document.createElement("p");
-          listItem.appendChild(link);
-          listContainer.appendChild(listItem);
+          // 创建卡片元素
+          const card = document.createElement("div");
+          card.classList.add("restaurant-card");
+
+          // 创建餐厅信息区域
+          const info = document.createElement("div");
+          info.classList.add("info");
+
+          // 在卡片中添加餐厅名称和分类
+          const name = document.createElement("h5");
+          name.classList.add("mb-0");
+          name.textContent = restaurant.name;
+
+          info.appendChild(name);
+          // 创建 "查看 Google 地图" 按钮
+          const button = document.createElement("a");
+          button.classList.add("btn-view-map");
+          button.href = restaurant.googleMap;
+          button.target = "_blank";
+          button.innerHTML = '<i class="fa-solid fa-location-dot"></i>'; // 添加 FontAwesome 图标
+
+          // 将餐厅信息和按钮添加到卡片中
+          card.appendChild(info);
+          card.appendChild(button);
+
+          // 将卡片添加到容器中
+          listContainer.appendChild(card);
         });
       } else {
         listContainer.innerHTML = "<p>目前沒有該類別的餐廳。</p>";
